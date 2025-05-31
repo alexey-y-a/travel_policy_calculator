@@ -8,7 +8,6 @@
 - Реальные бизнес требования
 - Множество дизайн паттернов и библиотек
 - VCS Git, Build Tool Gradle, CI/GitHub Actions
-- И многое другое.
 
 
 ## Основные темы проекта:
@@ -22,7 +21,6 @@
 - Observability
 - DDD
 - Clean code
-- и так далее.
 
 
 ## Технологии и инструменты используемые в проекте
@@ -40,5 +38,3 @@
 - JSON, XML
 - Containers, Docker
 - Message Broker, RabbitMQ
-- и многое другое.
-
