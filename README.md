@@ -5,7 +5,6 @@
 - Hexagonal architecture
 - Автоматические миграции базы данных
 - Юнит, интеграционные и acceptance тесты
-- Реальные бизнес требования
 - Множество дизайн паттернов и библиотек
 - VCS Git, Build Tool Gradle, CI/GitHub Actions
 
