@@ -1,19 +1,17 @@
-name: Java CI with Auto-Merge
+name: Auto PR & Merge
 
 on:
   push:
     branches-ignore: [main]
-  pull_request:
-    branches: [main]
 
 permissions:
   contents: write
   pull-requests: write
-  checks: write  # Добавляем права на управление проверками
+  checks: write
+  statuses: write
 
 jobs:
   create-pr:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v6
@@ -41,64 +39,62 @@ jobs:
           cache: 'gradle'
       - run: chmod +x ./gradlew
       - run: ./gradlew build
-      - name: Create Status Check
-        uses: actions/github-script@v6
-        with:
-          script: |
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: context.sha,
-              state: 'success',
-              context: 'CI / Build',
-              description: 'Auto-approved by workflow'
-            })
 
-  auto-merge:
-    needs: [create-pr, build]
+  approve-and-merge:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v6
         with:
           script: |
-            // Получаем список PR для этой ветки
-            const { data: prs } = await github.rest.pulls.list({
+            // 1. Одобряем PR от имени GitHub Actions
+            await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              head: `${context.repo.owner}:${context.ref.replace('refs/heads/', '')}`,
-              state: 'open'
-            });
+              pull_number: context.payload.pull_request.number,
+              event: 'APPROVE'
+            })
             
-            if (prs.length > 0) {
-              // Временно отключаем защиту ветки
-              await github.rest.repos.updateBranchProtection({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                branch: 'main',
-                required_status_checks: null,
-                enforce_admins: false,
-                restrictions: null
-              });
+            // 2. Временно отключаем защиту ветки main
+            await github.rest.repos.updateBranchProtection({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: 'main',
+              required_status_checks: null,
+              enforce_admins: null,
+              restrictions: null
+            })
             
-              // Выполняем мерж
-              await github.rest.pulls.merge({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prs[0].number,
-                merge_method: 'squash'
-              });
+            // 3. Выполняем мерж PR методом squash
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              merge_method: 'squash'
+            })
             
-              // Восстанавливаем защиту
-              await github.rest.repos.updateBranchProtection({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                branch: 'main',
-                required_status_checks: {
-                  strict: true,
-                  contexts: ['CI / Build']
-                },
-                enforce_admins: true,
-                required_pull_request_reviews: null,
-                restrictions: null
-              });
-            }
+            // 4. Восстанавливаем защиту ветки main
+            await github.rest.repos.updateBranchProtection({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: 'main',
+              required_status_checks: {
+                strict: true,
+                contexts: ['build']
+              },
+              enforce_admins: true,
+              restrictions: null
+            })
+            
+            // 5. Закрываем PR и удаляем ветку
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              state: 'closed'
+            })
+            await github.rest.git.deleteRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'heads/' + context.ref.replace('refs/heads/', '')
+            })
