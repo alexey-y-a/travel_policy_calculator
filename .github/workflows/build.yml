@@ -1,9 +1,9 @@
 name: Java CI with Auto-Merge
 
 on:
-  pull_request:
-    branches: [main]
   push:
+    branches-ignore: [main]  # Запуск для всех веток, КРОМЕ main
+  pull_request:
     branches: [main]
 
 permissions:
@@ -11,7 +11,24 @@ permissions:
   pull-requests: write
 
 jobs:
+  create-pr:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Auto-PR: ' + context.ref.replace('refs/heads/', ''),
+              head: context.ref.replace('refs/heads/', ''),
+              base: 'main',
+              body: 'Автоматически созданный PR'
+            })
+
   build:
+    needs: create-pr
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,15 +43,23 @@ jobs:
 
   auto-merge:
     needs: build
-    if: github.event_name == 'pull_request' && success()
+    if: success()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v6
         with:
           script: |
-            await github.rest.pulls.merge({
+            const prs = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              merge_method: 'squash'
-            })
+              head: context.ref.replace('refs/heads/', ''),
+              state: 'open'
+            });
+            if (prs.data.length > 0) {
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prs.data[0].number,
+                merge_method: 'squash'
+              });
+            }
