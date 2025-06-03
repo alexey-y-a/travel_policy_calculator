@@ -1,6 +1,10 @@
 name: Java CI with Gradle
 
-on: [push] # Запуск при каждом push'е в репозиторий
+on:
+  push:
+    branches: [ "main" ]  # Только при пуше в main
+  pull_request:
+    branches: [ "main" ]  # Запуск для PR в main
 
 jobs:
   build:
@@ -25,3 +29,18 @@ jobs:
       # 4. Основная сборка проекта
       - name: Build with Gradle
         run: ./gradlew build
+
+deploy:
+  needs: build
+  runs-on: ubuntu-latest
+  if: github.event_name == 'pull_request' && success()
+  steps:
+    - uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.pulls.merge({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.payload.pull_request.number,
+            merge_method: 'squash'
+          })
