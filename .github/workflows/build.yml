@@ -1,46 +1,40 @@
-name: Java CI with Gradle
+name: Java CI with Auto-Merge
 
 on:
-  push:
-    branches: [ "main" ]  # Только при пуше в main
   pull_request:
-    branches: [ "main" ]  # Запуск для PR в main
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     steps:
-      # 1. Получение кода из репозитория
       - uses: actions/checkout@v4
-      
-      # 2. Настройка JDK 21
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: 'gradle' # Кэширование для ускорения сборок
-      
-      # 3. Даем права на выполнение gradlew
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-      
-      # 4. Основная сборка проекта
-      - name: Build with Gradle
-        run: ./gradlew build
+          cache: 'gradle'
+      - run: chmod +x ./gradlew
+      - run: ./gradlew build
 
-deploy:
-  needs: build
-  runs-on: ubuntu-latest
-  if: github.event_name == 'pull_request' && success()
-  steps:
-    - uses: actions/github-script@v6
-      with:
-        script: |
-          github.rest.pulls.merge({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: context.payload.pull_request.number,
-            merge_method: 'squash'
-          })
+  auto-merge:
+    needs: build
+    if: github.event_name == 'pull_request' && success()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              merge_method: 'squash'
+            })
