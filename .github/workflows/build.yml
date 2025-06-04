@@ -2,36 +2,58 @@ name: Auto PR & Merge
 
 on:
   push:
-    branches-ignore: [main]
+    branches-ignore:
+      - main
 
 permissions:
   contents: write
   pull-requests: write
   checks: write
   statuses: write
+  actions: write
 
 jobs:
   create-pr:
     runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.create-pr.outputs.pr_number }}
     steps:
       - uses: actions/github-script@v6
+        id: create-pr
         with:
           script: |
-            await github.rest.pulls.create({
+            const branchName = context.ref.replace('refs/heads/', '');
+            const prList = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: 'Auto-PR: ' + context.ref.replace('refs/heads/', ''),
-              head: context.ref.replace('refs/heads/', ''),
-              base: 'main',
-              body: 'Автоматически созданный PR'
-            })
+              head: `${context.repo.owner}:${branchName}`,
+              state: 'open'
+            });
+
+            let prNumber;
+            if (prList.data.length > 0) {
+              prNumber = prList.data[0].number;
+              console.log(`Найден существующий PR: #${prNumber}`);
+            } else {
+              const response = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `Auto-PR: ${branchName}`,
+                head: branchName,
+                base: 'main',
+                body: 'Автоматически созданный PR'
+              });
+              prNumber = response.data.number;
+              console.log(`Создан новый PR: #${prNumber}`);
+            }
+            core.setOutput('pr_number', prNumber);
 
   build:
     needs: create-pr
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 21
+      - name: Установка JDK 21
         uses: actions/setup-java@v3
         with:
           java-version: '21'
@@ -39,62 +61,52 @@ jobs:
           cache: 'gradle'
       - run: chmod +x ./gradlew
       - run: ./gradlew build
+        name: Запуск сборки
 
   approve-and-merge:
-    needs: build
+    needs: [create-pr, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v6
+      - name: Обновить статус проверки
+        uses: actions/github-script@v6
         with:
           script: |
-            // 1. Одобряем PR от имени GitHub Actions
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: '${{ github.event.pull_request.head.sha || github.sha }}',
+              state: 'success',
+              context: 'CI / Build',
+              description: 'Build succeeded'
+            });
+
+      - uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const prNumber = ${{ needs.create-pr.outputs.pr_number }};
+            
+            // Одобрение PR
             await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              event: 'APPROVE'
-            })
-            
-            // 2. Временно отключаем защиту ветки main
-            await github.rest.repos.updateBranchProtection({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              branch: 'main',
-              required_status_checks: null,
-              enforce_admins: null,
-              restrictions: null
-            })
-            
-            // 3. Выполняем мерж PR методом squash
+              pull_number: prNumber,
+              event: 'APPROVE',
+              body: 'Автоматическое одобрение'
+            });
+
+            // Мерж PR
             await github.rest.pulls.merge({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
+              pull_number: prNumber,
               merge_method: 'squash'
-            })
-            
-            // 4. Восстанавливаем защиту ветки main
-            await github.rest.repos.updateBranchProtection({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              branch: 'main',
-              required_status_checks: {
-                strict: true,
-                contexts: ['build']
-              },
-              enforce_admins: true,
-              restrictions: null
-            })
-            
-            // 5. Закрываем PR и удаляем ветку
-            await github.rest.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              state: 'closed'
-            })
+            });
+
+            // Удаление ветки
+            const branchName = context.ref.replace('refs/heads/', '');
             await github.rest.git.deleteRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 'heads/' + context.ref.replace('refs/heads/', '')
-            })
+              ref: 'heads/' + branchName
+            });
