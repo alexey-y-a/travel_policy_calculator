@@ -4,6 +4,12 @@ on:
   push:
     branches-ignore:
       - main
+  workflow_dispatch:  # Добавляем возможность ручного запуска
+    inputs:
+      branch_name:
+        description: 'Branch name to process'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -22,7 +28,9 @@ jobs:
         id: create-pr
         with:
           script: |
-            const branchName = context.ref.replace('refs/heads/', '');
+            // Определяем имя ветки в зависимости от типа триггера
+            const branchName = '${{ github.event.inputs.branch_name }}' || context.ref.replace('refs/heads/', '');
+            
             const prList = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -48,6 +56,7 @@ jobs:
             }
             core.setOutput('pr_number', prNumber);
 
+  # Остальные jobs (build и approve-and-merge) остаются без изменений
   build:
     needs: create-pr
     runs-on: ubuntu-latest
