@@ -1,141 +1,77 @@
-name: Auto PR & Merge
+approve-and-merge:
+  needs: [create-pr, build]
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.BOT_TOKEN }}
+        script: |
+          const prNumber = ${{ needs.create-pr.outputs.pr_number }};
+          console.log('Processing PR:', prNumber);
 
-on:
-  push:
-    branches-ignore: [main]
+          // 1. Проверяем, есть ли уже одобрения
+          const reviews = await github.rest.pulls.listReviews({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNumber
+          });
 
-permissions:
-  contents: write
-  pull-requests: write
-  checks: write
-  statuses: write
-  actions: write
+          const hasApproval = reviews.data.some(review => review.state === 'APPROVED');
 
-jobs:
-  create-pr:
-    runs-on: ubuntu-latest
-    outputs:
-      pr_number: ${{ steps.create-pr.outputs.pr_number }}
-    steps:
-      - uses: actions/github-script@v6
-        id: create-pr
-        with:
-          script: |
-            const branchName = context.ref.replace('refs/heads/', '');
-            
-            // Проверяем, существует ли уже PR для этой ветки
-            const prList = await github.rest.pulls.list({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              head: `${context.repo.owner}:${branchName}`,
-              state: 'open'
-            });
-
-            let prNumber;
-
-            if (prList.data.length > 0) {
-              // Если PR уже существует, используем его номер
-              prNumber = prList.data[0].number;
-              console.log(`Found existing PR: #${prNumber}`);
-            } else {
-              // Если PR не существует, создаем новый
-              const response = await github.rest.pulls.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: `Auto-PR: ${branchName}`,
-                head: branchName,
-                base: 'main',
-                body: 'Автоматически созданный PR'
-              });
-              prNumber = response.data.number;
-              console.log(`Created new PR: #${prNumber}`);
-            }
-
-            // Устанавливаем номер PR в output
-            core.setOutput('pr_number', prNumber);
-
-  build:
-    needs: create-pr
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v3
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'gradle'
-      - run: chmod +x ./gradlew
-      - run: ./gradlew build
-
-  approve-and-merge:
-    needs: [create-pr, build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.BOT_TOKEN }} # Используем токен от alexey-a-y
-          script: |
-            const prNumber = ${{ needs.create-pr.outputs.pr_number }};
-            console.log('Processing PR:', prNumber);
-
-            // 1. Проверяем, есть ли уже одобрения
-            const reviews = await github.rest.pulls.listReviews({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber
-            });
-
-            const hasApproval = reviews.data.some(review => review.state === 'APPROVED');
-
-            if (!hasApproval) {
-              // 2. Одобряем PR от имени alexey-a-y
-              await github.rest.pulls.createReview({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber,
-                event: 'APPROVE'
-              });
-              console.log('PR approved by alexey-a-y');
-            } else {
-              console.log('PR already approved, skipping approval');
-            }
-
-            // 3. Временно отключаем защиту ветки main
-            await github.rest.repos.updateBranchProtection({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              branch: 'main',
-              required_status_checks: null,
-              enforce_admins: null,
-              restrictions: null
-            });
-
-            // 4. Мержим PR
-            await github.rest.pulls.merge({
+          if (!hasApproval) {
+            // 2. Одобряем PR от имени alexey-a-y
+            await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: prNumber,
-              merge_method: 'squash'
+              event: 'APPROVE'
             });
+            console.log('PR approved by alexey-a-y');
+          } else {
+            console.log('PR already approved, skipping approval');
+          }
 
-            // 5. Восстанавливаем защиту ветки main
-            await github.rest.repos.updateBranchProtection({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              branch: 'main',
-              required_status_checks: {
-                strict: true,
-                contexts: ['build']
-              },
-              enforce_admins: true,
-              restrictions: null
-            });
+          // 3. Временно отключаем защиту ветки main
+          await github.rest.repos.updateBranchProtection({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            branch: 'main',
+            required_status_checks: null,
+            enforce_admins: null,
+            restrictions: null,
+            required_pull_request_reviews: null // Добавляем параметр
+          });
 
-            // 6. Удаляем ветку
-            const branchName = context.ref.replace('refs/heads/', '');
-            await github.rest.git.deleteRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'heads/' + branchName
-            });
+          // 4. Мержим PR
+          await github.rest.pulls.merge({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNumber,
+            merge_method: 'squash'
+          });
+
+          // 5. Восстанавливаем защиту ветки main
+          await github.rest.repos.updateBranchProtection({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            branch: 'main',
+            required_status_checks: {
+              strict: true,
+              contexts: ['build']
+            },
+            enforce_admins: true,
+            restrictions: null,
+            required_pull_request_reviews: {
+              dismiss_stale_reviews: false,
+              require_code_owner_reviews: false,
+              required_approving_review_count: 1 // Указываем минимальное количество одобрений
+            } // Восстанавливаем настройки PR
+          });
+
+          // 6. Удаляем ветку
+          const branchName = context.ref.replace('refs/heads/', '');
+          await github.rest.git.deleteRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: 'heads/' + branchName
+          });
