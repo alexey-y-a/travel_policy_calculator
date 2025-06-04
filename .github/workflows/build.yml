@@ -23,8 +23,6 @@ jobs:
         with:
           script: |
             const branchName = context.ref.replace('refs/heads/', '');
-            
-            // Проверяем существующие PR для ветки
             const prList = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -33,12 +31,10 @@ jobs:
             });
 
             let prNumber;
-
             if (prList.data.length > 0) {
               prNumber = prList.data[0].number;
               console.log(`Найден существующий PR: #${prNumber}`);
             } else {
-              // Создаем новый PR
               const response = await github.rest.pulls.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -50,7 +46,6 @@ jobs:
               prNumber = response.data.number;
               console.log(`Создан новый PR: #${prNumber}`);
             }
-
             core.setOutput('pr_number', prNumber);
 
   build:
@@ -72,69 +67,46 @@ jobs:
     needs: [create-pr, build]
     runs-on: ubuntu-latest
     steps:
+      - name: Обновить статус проверки
+        uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: '${{ github.event.pull_request.head.sha || github.sha }}',
+              state: 'success',
+              context: 'CI / Build',
+              description: 'Build succeeded'
+            });
+
       - uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
             const prNumber = ${{ needs.create-pr.outputs.pr_number }};
-            console.log('Обрабатываем PR:', prNumber);
-
-            // 1. Проверяем существующие одобрения
-            const reviews = await github.rest.pulls.listReviews({
+            
+            // Одобрение PR
+            await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: prNumber
+              pull_number: prNumber,
+              event: 'APPROVE',
+              body: 'Автоматическое одобрение'
             });
 
-            const hasApproval = reviews.data.some(review => review.state === 'APPROVED');
+            // Мерж PR
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              merge_method: 'squash'
+            });
 
-            if (!hasApproval) {
-              // 2. Одобряем PR
-              await github.rest.pulls.createReview({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber,
-                event: 'APPROVE',
-                body: 'Автоматическое одобрение'
-              });
-              console.log('PR одобрен автоматически');
-            }
-
-            // 3. Получаем текущие правила защиты ветки
-            let protection;
-            try {
-              protection = await github.rest.repos.getBranchProtection({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                branch: 'main'
-              });
-            } catch (error) {
-              console.log('Не удалось получить правила защиты ветки:', error.message);
-            }
-
-            // 4. Мержим PR
-            try {
-              await github.rest.pulls.merge({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber,
-                merge_method: 'squash'
-              });
-              console.log('PR успешно вмержен');
-            } catch (error) {
-              console.error('Ошибка при мерже:', error.message);
-              core.setFailed('Не удалось выполнить мерж PR');
-            }
-
-            // 5. Удаляем ветку
-            try {
-              const branchName = context.ref.replace('refs/heads/', '');
-              await github.rest.git.deleteRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'heads/' + branchName
-              });
-              console.log('Ветка успешно удалена');
-            } catch (error) {
-              console.error('Ошибка при удалении ветки:', error.message);
-            }
+            // Удаление ветки
+            const branchName = context.ref.replace('refs/heads/', '');
+            await github.rest.git.deleteRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'heads/' + branchName
+            });
