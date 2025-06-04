@@ -9,6 +9,7 @@ permissions:
   pull-requests: write
   checks: write
   statuses: write
+  actions: write  # Добавлено новое разрешение
 
 jobs:
   create-pr:
@@ -52,7 +53,20 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            const prNumber = ${{ needs.create-pr.outputs.pr_number }};
+            // Получаем номер PR через контекст, а не через outputs
+            const prList = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: `${context.repo.owner}:${context.ref.replace('refs/heads/', '')}`,
+              state: 'open'
+            });
+            
+            if (prList.data.length === 0) {
+              core.setFailed('No open PR found for this branch');
+              return;
+            }
+            
+            const prNumber = prList.data[0].number;
             console.log('Processing PR:', prNumber);
 
             // 1. Одобряем PR
@@ -95,7 +109,7 @@ jobs:
             });
             
             // 5. Закрываем PR и удаляем ветку
-            const branchName = '${{ github.ref.replace('refs/heads/', '') }}';
+            const branchName = context.ref.replace('refs/heads/', '');
             await github.rest.git.deleteRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
