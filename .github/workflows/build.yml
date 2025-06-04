@@ -24,7 +24,7 @@ jobs:
           script: |
             const branchName = context.ref.replace('refs/heads/', '');
             
-            // Проверяем, существует ли уже PR для этой ветки
+            // Проверяем существующие PR для ветки
             const prList = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -35,11 +35,10 @@ jobs:
             let prNumber;
 
             if (prList.data.length > 0) {
-              // Если PR уже существует, используем его номер
               prNumber = prList.data[0].number;
-              console.log(`Found existing PR: #${prNumber}`);
+              console.log(`Найден существующий PR: #${prNumber}`);
             } else {
-              // Если PR не существует, создаем новый
+              // Создаем новый PR
               const response = await github.rest.pulls.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -49,10 +48,9 @@ jobs:
                 body: 'Автоматически созданный PR'
               });
               prNumber = response.data.number;
-              console.log(`Created new PR: #${prNumber}`);
+              console.log(`Создан новый PR: #${prNumber}`);
             }
 
-            // Устанавливаем номер PR в output
             core.setOutput('pr_number', prNumber);
 
   build:
@@ -60,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 21
+      - name: Установка JDK 21
         uses: actions/setup-java@v3
         with:
           java-version: '21'
@@ -68,6 +66,7 @@ jobs:
           cache: 'gradle'
       - run: chmod +x ./gradlew
       - run: ./gradlew build
+        name: Запуск сборки
 
   approve-and-merge:
     needs: [create-pr, build]
@@ -78,9 +77,9 @@ jobs:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
             const prNumber = ${{ needs.create-pr.outputs.pr_number }};
-            console.log('Processing PR:', prNumber);
+            console.log('Обрабатываем PR:', prNumber);
 
-            // 1. Проверяем, есть ли уже одобрения
+            // 1. Проверяем существующие одобрения
             const reviews = await github.rest.pulls.listReviews({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -90,59 +89,52 @@ jobs:
             const hasApproval = reviews.data.some(review => review.state === 'APPROVED');
 
             if (!hasApproval) {
-              // 2. Одобряем PR от имени alexey-a-y
+              // 2. Одобряем PR
               await github.rest.pulls.createReview({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: prNumber,
-                event: 'APPROVE'
+                event: 'APPROVE',
+                body: 'Автоматическое одобрение'
               });
-              console.log('PR approved by alexey-a-y');
-            } else {
-              console.log('PR already approved, skipping approval');
+              console.log('PR одобрен автоматически');
             }
 
-            // 3. Временно отключаем защиту ветки main
-            await github.rest.repos.updateBranchProtection({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              branch: 'main',
-              required_status_checks: null,
-              enforce_admins: null,
-              restrictions: null,
-              required_pull_request_reviews: null
-            });
+            // 3. Получаем текущие правила защиты ветки
+            let protection;
+            try {
+              protection = await github.rest.repos.getBranchProtection({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                branch: 'main'
+              });
+            } catch (error) {
+              console.log('Не удалось получить правила защиты ветки:', error.message);
+            }
 
             // 4. Мержим PR
-            await github.rest.pulls.merge({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber,
-              merge_method: 'squash'
-            });
+            try {
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                merge_method: 'squash'
+              });
+              console.log('PR успешно вмержен');
+            } catch (error) {
+              console.error('Ошибка при мерже:', error.message);
+              core.setFailed('Не удалось выполнить мерж PR');
+            }
 
-            // 5. Восстанавливаем защиту ветки main
-            await github.rest.repos.updateBranchProtection({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              branch: 'main',
-              required_status_checks: {
-                strict: true,
-                contexts: ['build']
-              },
-              enforce_admins: true,
-              restrictions: null,
-              required_pull_request_reviews: {
-                dismiss_stale_reviews: false,
-                require_code_owner_reviews: false,
-                required_approving_review_count: 1
-              }
-            });
-
-            // 6. Удаляем ветку
-            const branchName = context.ref.replace('refs/heads/', '');
-            await github.rest.git.deleteRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'heads/' + branchName
-            });
+            // 5. Удаляем ветку
+            try {
+              const branchName = context.ref.replace('refs/heads/', '');
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'heads/' + branchName
+              });
+              console.log('Ветка успешно удалена');
+            } catch (error) {
+              console.error('Ошибка при удалении ветки:', error.message);
+            }
