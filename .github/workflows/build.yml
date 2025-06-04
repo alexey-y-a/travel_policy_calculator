@@ -9,7 +9,7 @@ permissions:
   pull-requests: write
   checks: write
   statuses: write
-  actions: write  # Добавлено новое разрешение
+  actions: write
 
 jobs:
   create-pr:
@@ -21,16 +21,38 @@ jobs:
         id: create-pr
         with:
           script: |
-            const response = await github.rest.pulls.create({
+            const branchName = context.ref.replace('refs/heads/', '');
+            
+            // Проверяем, существует ли уже PR для этой ветки
+            const prList = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: 'Auto-PR: ' + context.ref.replace('refs/heads/', ''),
-              head: context.ref.replace('refs/heads/', ''),
-              base: 'main',
-              body: 'Автоматически созданный PR'
+              head: `${context.repo.owner}:${branchName}`,
+              state: 'open'
             });
-            console.log('Created PR:', response.data.number);
-            core.setOutput('pr_number', response.data.number);
+
+            let prNumber;
+
+            if (prList.data.length > 0) {
+              // Если PR уже существует, используем его номер
+              prNumber = prList.data[0].number;
+              console.log(`Found existing PR: #${prNumber}`);
+            } else {
+              // Если PR не существует, создаем новый
+              const response = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `Auto-PR: ${branchName}`,
+                head: branchName,
+                base: 'main',
+                body: 'Автоматически созданный PR'
+              });
+              prNumber = response.data.number;
+              console.log(`Created new PR: #${prNumber}`);
+            }
+
+            // Устанавливаем номер PR в output
+            core.setOutput('pr_number', prNumber);
 
   build:
     needs: create-pr
@@ -53,20 +75,7 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            // Получаем номер PR через контекст, а не через outputs
-            const prList = await github.rest.pulls.list({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              head: `${context.repo.owner}:${context.ref.replace('refs/heads/', '')}`,
-              state: 'open'
-            });
-            
-            if (prList.data.length === 0) {
-              core.setFailed('No open PR found for this branch');
-              return;
-            }
-            
-            const prNumber = prList.data[0].number;
+            const prNumber = ${{ needs.create-pr.outputs.pr_number }};
             console.log('Processing PR:', prNumber);
 
             // 1. Одобряем PR
@@ -76,7 +85,7 @@ jobs:
               pull_number: prNumber,
               event: 'APPROVE'
             });
-            
+
             // 2. Временно отключаем защиту ветки main
             await github.rest.repos.updateBranchProtection({
               owner: context.repo.owner,
@@ -86,7 +95,7 @@ jobs:
               enforce_admins: null,
               restrictions: null
             });
-            
+
             // 3. Мержим PR
             await github.rest.pulls.merge({
               owner: context.repo.owner,
@@ -94,7 +103,7 @@ jobs:
               pull_number: prNumber,
               merge_method: 'squash'
             });
-            
+
             // 4. Восстанавливаем защиту ветки main
             await github.rest.repos.updateBranchProtection({
               owner: context.repo.owner,
@@ -107,8 +116,8 @@ jobs:
               enforce_admins: true,
               restrictions: null
             });
-            
-            // 5. Закрываем PR и удаляем ветку
+
+            // 5. Удаляем ветку
             const branchName = context.ref.replace('refs/heads/', '');
             await github.rest.git.deleteRef({
               owner: context.repo.owner,
