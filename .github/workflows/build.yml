@@ -74,19 +74,34 @@ jobs:
     steps:
       - uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.BOT_TOKEN }} # Используем токен от alexey-a-y
           script: |
             const prNumber = ${{ needs.create-pr.outputs.pr_number }};
             console.log('Processing PR:', prNumber);
 
-            // 1. Одобряем PR
-            await github.rest.pulls.createReview({
+            // 1. Проверяем, есть ли уже одобрения
+            const reviews = await github.rest.pulls.listReviews({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: prNumber,
-              event: 'APPROVE'
+              pull_number: prNumber
             });
 
-            // 2. Временно отключаем защиту ветки main
+            const hasApproval = reviews.data.some(review => review.state === 'APPROVED');
+
+            if (!hasApproval) {
+              // 2. Одобряем PR от имени alexey-a-y
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                event: 'APPROVE'
+              });
+              console.log('PR approved by alexey-a-y');
+            } else {
+              console.log('PR already approved, skipping approval');
+            }
+
+            // 3. Временно отключаем защиту ветки main
             await github.rest.repos.updateBranchProtection({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -96,7 +111,7 @@ jobs:
               restrictions: null
             });
 
-            // 3. Мержим PR
+            // 4. Мержим PR
             await github.rest.pulls.merge({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -104,7 +119,7 @@ jobs:
               merge_method: 'squash'
             });
 
-            // 4. Восстанавливаем защиту ветки main
+            // 5. Восстанавливаем защиту ветки main
             await github.rest.repos.updateBranchProtection({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -117,7 +132,7 @@ jobs:
               restrictions: null
             });
 
-            // 5. Удаляем ветку
+            // 6. Удаляем ветку
             const branchName = context.ref.replace('refs/heads/', '');
             await github.rest.git.deleteRef({
               owner: context.repo.owner,
