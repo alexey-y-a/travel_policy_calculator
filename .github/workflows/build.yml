@@ -13,18 +13,23 @@ permissions:
 jobs:
   create-pr:
     runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.create-pr.outputs.pr_number }}
     steps:
       - uses: actions/github-script@v6
+        id: create-pr
         with:
           script: |
-            await github.rest.pulls.create({
+            const response = await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: 'Auto-PR: ' + context.ref.replace('refs/heads/', ''),
               head: context.ref.replace('refs/heads/', ''),
               base: 'main',
               body: 'Автоматически созданный PR'
-            })
+            });
+            console.log('Created PR:', response.data.number);
+            core.setOutput('pr_number', response.data.number);
 
   build:
     needs: create-pr
@@ -41,19 +46,22 @@ jobs:
       - run: ./gradlew build
 
   approve-and-merge:
-    needs: build
+    needs: [create-pr, build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v6
         with:
           script: |
-            // 1. Одобряем PR от имени GitHub Actions
+            const prNumber = ${{ needs.create-pr.outputs.pr_number }};
+            console.log('Processing PR:', prNumber);
+
+            // 1. Одобряем PR
             await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
+              pull_number: prNumber,
               event: 'APPROVE'
-            })
+            });
             
             // 2. Временно отключаем защиту ветки main
             await github.rest.repos.updateBranchProtection({
@@ -63,15 +71,15 @@ jobs:
               required_status_checks: null,
               enforce_admins: null,
               restrictions: null
-            })
+            });
             
-            // 3. Выполняем мерж PR методом squash
+            // 3. Мержим PR
             await github.rest.pulls.merge({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
+              pull_number: prNumber,
               merge_method: 'squash'
-            })
+            });
             
             // 4. Восстанавливаем защиту ветки main
             await github.rest.repos.updateBranchProtection({
@@ -84,17 +92,12 @@ jobs:
               },
               enforce_admins: true,
               restrictions: null
-            })
+            });
             
             // 5. Закрываем PR и удаляем ветку
-            await github.rest.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              state: 'closed'
-            })
+            const branchName = '${{ github.ref.replace('refs/heads/', '') }}';
             await github.rest.git.deleteRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 'heads/' + context.ref.replace('refs/heads/', '')
-            })
+              ref: 'heads/' + branchName
+            });
