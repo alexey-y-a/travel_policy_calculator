@@ -6,7 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DateTimeServiceTest {
 
@@ -17,7 +17,7 @@ public class DateTimeServiceTest {
         Date date1 = createDate("01.01.2024");
         Date date2 = createDate("01.01.2024");
         var daysBetween = dateTimeService.getDaysBetween(date1, date2);
-        assertEquals(daysBetween, 0l);
+        assertEquals(daysBetween, 0L);
     }
 
     @Test
@@ -25,7 +25,7 @@ public class DateTimeServiceTest {
         Date date1 = createDate("01.01.2024");
         Date date2 = createDate("10.01.2024");
         var daysBetween = dateTimeService.getDaysBetween(date1, date2);
-        assertEquals(daysBetween, 9l);
+        assertEquals(daysBetween, 9L);
     }
 
     @Test
@@ -33,7 +33,7 @@ public class DateTimeServiceTest {
         Date date1 = createDate("10.01.2024");
         Date date2 = createDate("01.01.2024");
         var daysBetween = dateTimeService.getDaysBetween(date1, date2);
-        assertEquals(daysBetween, -9l);
+        assertEquals(daysBetween, -9L);
     }
 
     private Date createDate(String dateString) {

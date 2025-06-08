@@ -1,8 +1,11 @@
 package org.travel.insurance.core;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+@Component
 public class DateTimeService {
 
     long getDaysBetween(Date date1, Date date2) {
