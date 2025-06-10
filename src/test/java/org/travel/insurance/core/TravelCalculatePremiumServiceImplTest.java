@@ -3,9 +3,7 @@ package org.travel.insurance.core;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.travel.insurance.rest.TravelCalculatePremiumRequest;
-
 import java.util.Date;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
