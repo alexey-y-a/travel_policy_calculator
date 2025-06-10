@@ -3,7 +3,6 @@ package org.travel.insurance.core;
 import org.travel.insurance.rest.TravelCalculatePremiumRequest;
 import org.travel.insurance.rest.TravelCalculatePremiumResponse;
 import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 
 @Component
@@ -28,4 +27,5 @@ class TravelCalculatePremiumServiceImpl implements TravelCalculatePremiumService
 
         return travelCalculatePremiumResponse;
     }
+
 }
