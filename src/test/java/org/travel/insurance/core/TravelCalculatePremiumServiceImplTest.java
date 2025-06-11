@@ -2,25 +2,29 @@ package org.travel.insurance.core;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.travel.insurance.rest.TravelCalculatePremiumRequest;
 import java.util.Date;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class TravelCalculatePremiumServiceImplTest {
 
-    private DateTimeService dateTimeService;
+    @Mock private DateTimeService dateTimeService;
+
+    @InjectMocks
     private TravelCalculatePremiumServiceImpl travelCalculatePremiumService;
     private TravelCalculatePremiumRequest travelCalculatePremiumRequest;
 
     @BeforeEach
     public void setUp() {
         travelCalculatePremiumRequest = createRequestWithAllFields();
-        dateTimeService = mock(DateTimeService.class);
         when(dateTimeService.getDaysBetween(travelCalculatePremiumRequest.getAgreementDateFrom(), travelCalculatePremiumRequest.getAgreementDateTo())).thenReturn(0L);
-        travelCalculatePremiumService = new TravelCalculatePremiumServiceImpl(dateTimeService);
     }
 
     @Test
