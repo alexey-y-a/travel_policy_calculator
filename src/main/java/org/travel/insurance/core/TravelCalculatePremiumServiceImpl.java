@@ -8,9 +8,9 @@ import java.math.BigDecimal;
 @Component
 class TravelCalculatePremiumServiceImpl implements TravelCalculatePremiumService {
 
-    private DateTimeService dateTimeService;
+    private final DateTimeService dateTimeService;
 
-    public TravelCalculatePremiumServiceImpl(DateTimeService dateTimeService) {
+    TravelCalculatePremiumServiceImpl(DateTimeService dateTimeService) {
         this.dateTimeService = dateTimeService;
     }
 
