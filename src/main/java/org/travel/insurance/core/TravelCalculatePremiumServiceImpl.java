@@ -1,18 +1,17 @@
 package org.travel.insurance.core;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import org.travel.insurance.rest.TravelCalculatePremiumRequest;
 import org.travel.insurance.rest.TravelCalculatePremiumResponse;
 import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 @Component
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 class TravelCalculatePremiumServiceImpl implements TravelCalculatePremiumService {
 
     private final DateTimeService dateTimeService;
-
-    TravelCalculatePremiumServiceImpl(DateTimeService dateTimeService) {
-        this.dateTimeService = dateTimeService;
-    }
 
     @Override
     public TravelCalculatePremiumResponse calculatePremium(TravelCalculatePremiumRequest travelCalculatePremiumRequest) {
