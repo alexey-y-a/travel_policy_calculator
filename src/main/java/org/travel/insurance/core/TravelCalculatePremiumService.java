@@ -1,7 +1,7 @@
 package org.travel.insurance.core;
 
-import org.travel.insurance.rest.TravelCalculatePremiumRequest;
-import org.travel.insurance.rest.TravelCalculatePremiumResponse;
+import org.travel.insurance.dto.TravelCalculatePremiumRequest;
+import org.travel.insurance.dto.TravelCalculatePremiumResponse;
 
 public interface TravelCalculatePremiumService {
 
