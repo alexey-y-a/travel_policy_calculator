@@ -13,12 +13,19 @@ public class TravelCalculatePremiumRequestValidator {
     public List<ValidationError> validate(TravelCalculatePremiumRequest travelCalculatePremiumRequest) {
         List<ValidationError> errors = new ArrayList<>();
         validatePersonFirstName(travelCalculatePremiumRequest).ifPresent(errors::add);
+        validatePersonLastName(travelCalculatePremiumRequest).ifPresent(errors::add);
         return errors;
     }
 
     private Optional<ValidationError> validatePersonFirstName(TravelCalculatePremiumRequest travelCalculatePremiumRequest) {
         return (travelCalculatePremiumRequest.getPersonFirstName() == null || travelCalculatePremiumRequest.getPersonFirstName().isEmpty())
                 ? Optional.of(new ValidationError("personFirstName", "Must not be empty!"))
+                : Optional.empty();
+    }
+
+    private Optional<ValidationError> validatePersonLastName(TravelCalculatePremiumRequest travelCalculatePremiumRequest) {
+        return (travelCalculatePremiumRequest.getPersonLastName() == null || travelCalculatePremiumRequest.getPersonLastName().isEmpty())
+                ? Optional.of(new ValidationError("personLastName", "Must not be empty!"))
                 : Optional.empty();
     }
 
