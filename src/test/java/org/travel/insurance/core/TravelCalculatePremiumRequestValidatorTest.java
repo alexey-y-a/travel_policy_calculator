@@ -22,6 +22,7 @@ public class TravelCalculatePremiumRequestValidatorTest {
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn(null);
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("lastName");
         when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(new Date());
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(new Date());
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertFalse(errors.isEmpty());
         assertEquals(1, errors.size());
@@ -35,6 +36,7 @@ public class TravelCalculatePremiumRequestValidatorTest {
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("");
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("lastName");
         when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(new Date());
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(new Date());
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertFalse(errors.isEmpty());
         assertEquals(1, errors.size());
@@ -48,6 +50,7 @@ public class TravelCalculatePremiumRequestValidatorTest {
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("firstName");
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn(null);
         when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(new Date());
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(new Date());
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertFalse(errors.isEmpty());
         assertEquals(1, errors.size());
@@ -61,6 +64,7 @@ public class TravelCalculatePremiumRequestValidatorTest {
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("firstName");
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("");
         when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(new Date());
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(new Date());
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertFalse(errors.isEmpty());
         assertEquals(1, errors.size());
@@ -74,10 +78,25 @@ public class TravelCalculatePremiumRequestValidatorTest {
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("firstName");
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("lastName");
         when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(null);
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(new Date());
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertFalse(errors.isEmpty());
         assertEquals(1, errors.size());
         assertEquals("agreementDateFrom", errors.get(0).getField());
+        assertEquals("Must not be empty!", errors.get(0).getMessage());
+    }
+
+    @Test
+    public void shouldReturnErrorWhenAgreementDateToIsNull() {
+        TravelCalculatePremiumRequest travelCalculatePremiumRequest = mock(TravelCalculatePremiumRequest.class);
+        when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("firstName");
+        when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("lastName");
+        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(new Date());
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(null);
+        List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
+        assertFalse(errors.isEmpty());
+        assertEquals(1, errors.size());
+        assertEquals("agreementDateTo", errors.get(0).getField());
         assertEquals("Must not be empty!", errors.get(0).getMessage());
     }
 
@@ -87,6 +106,7 @@ public class TravelCalculatePremiumRequestValidatorTest {
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("firstName");
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("lastName");
         when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(new Date());
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(new Date());
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertTrue(errors.isEmpty());
     }
