@@ -14,6 +14,7 @@ public class TravelCalculatePremiumRequestValidator {
         List<ValidationError> errors = new ArrayList<>();
         validatePersonFirstName(travelCalculatePremiumRequest).ifPresent(errors::add);
         validatePersonLastName(travelCalculatePremiumRequest).ifPresent(errors::add);
+        validateAgreementDateFrom(travelCalculatePremiumRequest).ifPresent(errors::add);
         return errors;
     }
 
@@ -26,6 +27,12 @@ public class TravelCalculatePremiumRequestValidator {
     private Optional<ValidationError> validatePersonLastName(TravelCalculatePremiumRequest travelCalculatePremiumRequest) {
         return (travelCalculatePremiumRequest.getPersonLastName() == null || travelCalculatePremiumRequest.getPersonLastName().isEmpty())
                 ? Optional.of(new ValidationError("personLastName", "Must not be empty!"))
+                : Optional.empty();
+    }
+
+    private Optional<ValidationError> validateAgreementDateFrom(TravelCalculatePremiumRequest travelCalculatePremiumRequest) {
+        return (travelCalculatePremiumRequest.getAgreementDateFrom() == null)
+                ? Optional.of(new ValidationError("agreementDateFrom", "Must not be empty!"))
                 : Optional.empty();
     }
 
