@@ -81,7 +81,7 @@ public class TravelCalculatePremiumRequestValidatorTest {
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("firstName");
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("lastName");
         when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(null);
-        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(createDate("01.01.2023"));
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(createDate("10.01.2023"));
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertFalse(errors.isEmpty());
         assertEquals(1, errors.size());
