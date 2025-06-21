@@ -4,8 +4,11 @@ import org.junit.jupiter.api.Test;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.ValidationError;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,8 +24,8 @@ public class TravelCalculatePremiumRequestValidatorTest {
         TravelCalculatePremiumRequest travelCalculatePremiumRequest = mock(TravelCalculatePremiumRequest.class);
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn(null);
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("lastName");
-        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(new Date());
-        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(new Date());
+        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(createDate("01.01.2023"));
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(createDate("10.01.2023"));
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertFalse(errors.isEmpty());
         assertEquals(1, errors.size());
@@ -35,8 +38,8 @@ public class TravelCalculatePremiumRequestValidatorTest {
         TravelCalculatePremiumRequest travelCalculatePremiumRequest = mock(TravelCalculatePremiumRequest.class);
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("");
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("lastName");
-        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(new Date());
-        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(new Date());
+        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(createDate("01.01.2023"));
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(createDate("10.01.2023"));
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertFalse(errors.isEmpty());
         assertEquals(1, errors.size());
@@ -49,8 +52,8 @@ public class TravelCalculatePremiumRequestValidatorTest {
         TravelCalculatePremiumRequest travelCalculatePremiumRequest = mock(TravelCalculatePremiumRequest.class);
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("firstName");
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn(null);
-        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(new Date());
-        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(new Date());
+        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(createDate("01.01.2023"));
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(createDate("10.01.2023"));
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertFalse(errors.isEmpty());
         assertEquals(1, errors.size());
@@ -63,8 +66,8 @@ public class TravelCalculatePremiumRequestValidatorTest {
         TravelCalculatePremiumRequest travelCalculatePremiumRequest = mock(TravelCalculatePremiumRequest.class);
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("firstName");
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("");
-        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(new Date());
-        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(new Date());
+        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(createDate("01.01.2023"));
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(createDate("10.01.2023"));
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertFalse(errors.isEmpty());
         assertEquals(1, errors.size());
@@ -78,7 +81,7 @@ public class TravelCalculatePremiumRequestValidatorTest {
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("firstName");
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("lastName");
         when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(null);
-        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(new Date());
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(createDate("01.01.2023"));
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertFalse(errors.isEmpty());
         assertEquals(1, errors.size());
@@ -91,7 +94,7 @@ public class TravelCalculatePremiumRequestValidatorTest {
         TravelCalculatePremiumRequest travelCalculatePremiumRequest = mock(TravelCalculatePremiumRequest.class);
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("firstName");
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("lastName");
-        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(new Date());
+        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(createDate("01.01.2023"));
         when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(null);
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertFalse(errors.isEmpty());
@@ -101,14 +104,50 @@ public class TravelCalculatePremiumRequestValidatorTest {
     }
 
     @Test
+    public void shouldReturnErrorWhenDateFromIsEqualsDateTo() {
+        TravelCalculatePremiumRequest travelCalculatePremiumRequest = mock(TravelCalculatePremiumRequest.class);
+        when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("firstName");
+        when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("lastName");
+        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(createDate("01.01.2023"));
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(createDate("01.01.2023"));
+        List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
+        assertFalse(errors.isEmpty());
+        assertEquals(1, errors.size());
+        assertEquals("agreementDateFrom", errors.get(0).getField());
+        assertEquals("Must be less then agreementDateTo!", errors.get(0).getMessage());
+    }
+
+    @Test
+    public void shouldReturnErrorWhenDateFromIsAfterDateTo() {
+        TravelCalculatePremiumRequest travelCalculatePremiumRequest = mock(TravelCalculatePremiumRequest.class);
+        when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("firstName");
+        when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("lastName");
+        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(createDate("10.01.2023"));
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(createDate("01.01.2023"));
+        List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
+        assertFalse(errors.isEmpty());
+        assertEquals(1, errors.size());
+        assertEquals("agreementDateFrom", errors.get(0).getField());
+        assertEquals("Must be less then agreementDateTo!", errors.get(0).getMessage());
+    }
+
+    @Test
     public void shouldNotReturnErrorWhenPersonFirstNameIsPresent() {
         TravelCalculatePremiumRequest travelCalculatePremiumRequest = mock(TravelCalculatePremiumRequest.class);
         when(travelCalculatePremiumRequest.getPersonFirstName()).thenReturn("firstName");
         when(travelCalculatePremiumRequest.getPersonLastName()).thenReturn("lastName");
-        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(new Date());
-        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(new Date());
+        when(travelCalculatePremiumRequest.getAgreementDateFrom()).thenReturn(createDate("01.01.2023"));
+        when(travelCalculatePremiumRequest.getAgreementDateTo()).thenReturn(createDate("10.01.2023"));
         List<ValidationError> errors = requestValidator.validate(travelCalculatePremiumRequest);
         assertTrue(errors.isEmpty());
+    }
+
+    private Date createDate(String dateStr) {
+        try {
+            return new SimpleDateFormat("dd.MM.yy").parse(dateStr);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
