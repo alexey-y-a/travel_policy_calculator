@@ -1,4 +1,4 @@
-package org.travel.insurance.core;
+package org.travel.insurance.core.validations;
 
 import org.junit.jupiter.api.Test;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
@@ -11,35 +11,35 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class PersonFirstNameValidationTest {
+class PersonLastNameValidationTest {
 
-    private PersonFirstNameValidation validation = new PersonFirstNameValidation();
+    private PersonLastNameValidation validation = new PersonLastNameValidation();
 
     @Test
-    public void shouldReturnErrorWhenPersonFirstNameIsNull() {
+    public void shouldReturnErrorWhenPersonLastNameIsNull() {
         TravelCalculatePremiumRequest request = mock(TravelCalculatePremiumRequest.class);
-        when(request.getPersonFirstName()).thenReturn(null);
-        Optional<ValidationError> errorOpt = validation.validatePersonFirstName(request);
+        when(request.getPersonLastName()).thenReturn(null);
+        Optional<ValidationError> errorOpt = validation.validatePersonLastName(request);
         assertTrue(errorOpt.isPresent());
-        assertEquals("personFirstName", errorOpt.get().getField());
+        assertEquals("personLastName", errorOpt.get().getField());
         assertEquals("Must not be empty!", errorOpt.get().getMessage());
     }
 
     @Test
-    public void shouldReturnErrorWhenPersonFirstNameIsEmpty() {
+    public void shouldReturnErrorWhenPersonLastNameIsEmpty() {
         TravelCalculatePremiumRequest request = mock(TravelCalculatePremiumRequest.class);
-        when(request.getPersonFirstName()).thenReturn("");
-        Optional<ValidationError> errorOpt = validation.validatePersonFirstName(request);
+        when(request.getPersonLastName()).thenReturn("");
+        Optional<ValidationError> errorOpt = validation.validatePersonLastName(request);
         assertTrue(errorOpt.isPresent());
-        assertEquals("personFirstName", errorOpt.get().getField());
+        assertEquals("personLastName", errorOpt.get().getField());
         assertEquals("Must not be empty!", errorOpt.get().getMessage());
     }
 
     @Test
-    public void shouldNotReturnErrorWhenPersonFirstNameIsPresent() {
+    public void shouldNotReturnErrorWhenPersonLastNameIsPresent() {
         TravelCalculatePremiumRequest request = mock(TravelCalculatePremiumRequest.class);
-        when(request.getPersonFirstName()).thenReturn("Vasja");
-        Optional<ValidationError> errorOpt = validation.validatePersonFirstName(request);
+        when(request.getPersonLastName()).thenReturn("Petrov");
+        Optional<ValidationError> errorOpt = validation.validatePersonLastName(request);
         assertTrue(errorOpt.isEmpty());
     }
 
