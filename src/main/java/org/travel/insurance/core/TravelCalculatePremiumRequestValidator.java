@@ -1,8 +1,16 @@
 package org.travel.insurance.core;
 
-import org.springframework.stereotype.Component;
+import org.travel.insurance.core.validations.AgreementDateFromInFutureValidation;
+import org.travel.insurance.core.validations.AgreementDateFromValidation;
+import org.travel.insurance.core.validations.AgreementDateToInFutureValidation;
+import org.travel.insurance.core.validations.AgreementDateToValidation;
+import org.travel.insurance.core.validations.DateFromLessThenDateToValidation;
+import org.travel.insurance.core.validations.PersonFirstNameValidation;
+import org.travel.insurance.core.validations.PersonLastNameValidation;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.ValidationError;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,12 +1,19 @@
 package org.travel.insurance.core;
 
+import org.travel.insurance.core.validations.AgreementDateFromInFutureValidation;
+import org.travel.insurance.core.validations.AgreementDateFromValidation;
+import org.travel.insurance.core.validations.AgreementDateToInFutureValidation;
+import org.travel.insurance.core.validations.AgreementDateToValidation;
+import org.travel.insurance.core.validations.DateFromLessThenDateToValidation;
+import org.travel.insurance.core.validations.PersonFirstNameValidation;
+import org.travel.insurance.core.validations.PersonLastNameValidation;
+import org.travel.insurance.dto.TravelCalculatePremiumRequest;
+import org.travel.insurance.dto.ValidationError;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.travel.insurance.dto.TravelCalculatePremiumRequest;
-import org.travel.insurance.dto.ValidationError;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,8 +55,8 @@ public class TravelCalculatePremiumRequestValidatorTest {
     @Test
     public void shouldReturnError() {
         TravelCalculatePremiumRequest request = mock(TravelCalculatePremiumRequest.class);
-        when(personFirstNameValidation.validatePersonFirstName(request)).thenReturn(Optional.of(new ValidationError("errorCode", "description")));
-        when(personLastNameValidation.validatePersonLastName(request)).thenReturn(Optional.of(new ValidationError("errorCode", "description")));
+        when(personFirstNameValidation.validatePersonFirstName(request)).thenReturn(Optional.of(new ValidationError()));
+        when(personLastNameValidation.validatePersonLastName(request)).thenReturn(Optional.of(new ValidationError()));
         when(agreementDateFromValidation.validateAgreementDateFrom(request)).thenReturn(Optional.of(new ValidationError()));
         when(agreementDateToValidation.validateAgreementDateTo(request)).thenReturn(Optional.of(new ValidationError()));
         when(dateFromLessThenDateToValidation.validateDateFromLessThenDateTo(request)).thenReturn(Optional.of(new ValidationError()));

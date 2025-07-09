@@ -1,4 +1,4 @@
-package org.travel.insurance.core;
+package org.travel.insurance.core.validations;
 
 import org.junit.jupiter.api.Test;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
@@ -14,25 +14,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class AgreementDateToValidationTest {
+class AgreementDateFromValidationTest {
 
-    private AgreementDateToValidation validation = new AgreementDateToValidation();
+    private AgreementDateFromValidation validation = new AgreementDateFromValidation();
 
     @Test
-    public void shouldReturnErrorWhenAgreementDateToIsNull() {
+    public void shouldReturnErrorWhenAgreementDateFromIsNull() {
         TravelCalculatePremiumRequest request = mock(TravelCalculatePremiumRequest.class);
-        when(request.getAgreementDateTo()).thenReturn(null);
-        Optional<ValidationError> errorOpt = validation.validateAgreementDateTo(request);
+        when(request.getAgreementDateFrom()).thenReturn(null);
+        Optional<ValidationError> errorOpt = validation.validateAgreementDateFrom(request);
         assertTrue(errorOpt.isPresent());
-        assertEquals("agreementDateTo", errorOpt.get().getField());
+        assertEquals("agreementDateFrom", errorOpt.get().getField());
         assertEquals("Must not be empty!", errorOpt.get().getMessage());
     }
 
     @Test
-    public void shouldNotReturnErrorWhenAgreementDateToIsPresent() {
+    public void shouldNotReturnErrorWhenAgreementDateFromIsPresent() {
         TravelCalculatePremiumRequest request = mock(TravelCalculatePremiumRequest.class);
-        when(request.getAgreementDateTo()).thenReturn(createDate("01.01.2025"));
-        Optional<ValidationError> errorOpt = validation.validateAgreementDateTo(request);
+        when(request.getAgreementDateFrom()).thenReturn(createDate("01.01.2025"));
+        Optional<ValidationError> errorOpt = validation.validateAgreementDateFrom(request);
         assertTrue(errorOpt.isEmpty());
     }
 

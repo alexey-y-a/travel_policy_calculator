@@ -1,10 +1,11 @@
-package org.travel.insurance.core;
+package org.travel.insurance.core.validations;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.travel.insurance.core.DateTimeService;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.ValidationError;
 
@@ -19,31 +20,31 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AgreementDateToInFutureValidationTest {
+class AgreementDateFromInFutureValidationTest {
 
     @Mock
     private DateTimeService dateTimeService;
 
     @InjectMocks
-    private AgreementDateToInFutureValidation validation;
+    private AgreementDateFromInFutureValidation validation;
 
     @Test
-    public void shouldReturnErrorWhenAgreementDateToInThePast() {
+    public void shouldReturnErrorWhenAgreementDateFromInThePast() {
         TravelCalculatePremiumRequest request = mock(TravelCalculatePremiumRequest.class);
-        when(request.getAgreementDateTo()).thenReturn(createDate("01.01.2020"));
+        when(request.getAgreementDateFrom()).thenReturn(createDate("01.01.2020"));
         when(dateTimeService.getCurrentDateTime()).thenReturn(createDate("01.01.2023"));
-        Optional<ValidationError> errorOpt = validation.validateDateToInFuture(request);
+        Optional<ValidationError> errorOpt = validation.validateDateFromInFuture(request);
         assertTrue(errorOpt.isPresent());
-        assertEquals("agreementDateTo", errorOpt.get().getField());
+        assertEquals("agreementDateFrom", errorOpt.get().getField());
         assertEquals("Must be in the future!", errorOpt.get().getMessage());
     }
 
     @Test
-    public void shouldNotReturnErrorWhenAgreementDateToInTheFuture() {
+    public void shouldNotReturnErrorWhenAgreementDateFromInFuture() {
         TravelCalculatePremiumRequest request = mock(TravelCalculatePremiumRequest.class);
-        when(request.getAgreementDateTo()).thenReturn(createDate("01.01.2025"));
+        when(request.getAgreementDateFrom()).thenReturn(createDate("01.01.2025"));
         when(dateTimeService.getCurrentDateTime()).thenReturn(createDate("01.01.2023"));
-        Optional<ValidationError> errorOpt = validation.validateDateToInFuture(request);
+        Optional<ValidationError> errorOpt = validation.validateDateFromInFuture(request);
         assertTrue(errorOpt.isEmpty());
     }
 

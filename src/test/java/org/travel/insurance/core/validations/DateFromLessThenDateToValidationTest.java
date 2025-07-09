@@ -1,4 +1,4 @@
-package org.travel.insurance.core;
+package org.travel.insurance.core.validations;
 
 import org.junit.jupiter.api.Test;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
