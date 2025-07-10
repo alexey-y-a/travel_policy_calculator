@@ -7,9 +7,10 @@ import org.travel.insurance.dto.ValidationError;
 import java.util.Optional;
 
 @Component
-public class AgreementDateToValidation {
+public class AgreementDateToValidation implements TravelRequestValidation {
 
-    public Optional<ValidationError> validateAgreementDateTo(TravelCalculatePremiumRequest request) {
+    @Override
+    public Optional<ValidationError> execute(TravelCalculatePremiumRequest request) {
         return (request.getAgreementDateTo() == null)
                 ? Optional.of(new ValidationError("agreementDateTo", "Must not be empty!"))
                 : Optional.empty();

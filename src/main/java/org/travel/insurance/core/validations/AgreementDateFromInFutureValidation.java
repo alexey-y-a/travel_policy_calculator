@@ -12,11 +12,12 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public class AgreementDateFromInFutureValidation {
+class AgreementDateFromInFutureValidation implements TravelRequestValidation {
 
     private final DateTimeService dateTimeService;
 
-    public Optional<ValidationError> validateDateFromInFuture(TravelCalculatePremiumRequest request) {
+    @Override
+    public Optional<ValidationError> execute(TravelCalculatePremiumRequest request) {
         Date dateFrom = request.getAgreementDateFrom();
         Date currentDateTime = dateTimeService.getCurrentDateTime();
         return (dateFrom != null && dateFrom.before(currentDateTime))
