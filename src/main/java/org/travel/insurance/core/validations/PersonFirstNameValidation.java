@@ -7,9 +7,10 @@ import org.travel.insurance.dto.ValidationError;
 import java.util.Optional;
 
 @Component
-public class PersonFirstNameValidation {
+public class PersonFirstNameValidation implements TravelRequestValidation {
 
-    public Optional<ValidationError> validatePersonFirstName(TravelCalculatePremiumRequest request) {
+    @Override
+    public Optional<ValidationError> execute(TravelCalculatePremiumRequest request) {
         return (request.getPersonFirstName() == null || request.getPersonFirstName().isEmpty())
                 ? Optional.of(new ValidationError("personFirstName", "Must not be empty!"))
                 : Optional.empty();

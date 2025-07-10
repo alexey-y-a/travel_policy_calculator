@@ -1,56 +1,27 @@
 package org.travel.insurance.core;
 
-import org.travel.insurance.core.validations.AgreementDateFromInFutureValidation;
-import org.travel.insurance.core.validations.AgreementDateFromValidation;
-import org.travel.insurance.core.validations.AgreementDateToInFutureValidation;
-import org.travel.insurance.core.validations.AgreementDateToValidation;
-import org.travel.insurance.core.validations.DateFromLessThenDateToValidation;
-import org.travel.insurance.core.validations.PersonFirstNameValidation;
-import org.travel.insurance.core.validations.PersonLastNameValidation;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import org.travel.insurance.core.validations.TravelRequestValidation;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.ValidationError;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class TravelCalculatePremiumRequestValidator {
 
-    private final PersonFirstNameValidation personFirstNameValidation;
-    private final PersonLastNameValidation personLastNameValidation;
-    private final AgreementDateFromValidation agreementDateFromValidation;
-    private final AgreementDateToValidation agreementDateToValidation;
-    private final DateFromLessThenDateToValidation dateFromLessThenDateToValidation;
-    private final AgreementDateFromInFutureValidation agreementDateFromInFutureValidation;
-    private final AgreementDateToInFutureValidation agreementDateToInFutureValidation;
-
-    TravelCalculatePremiumRequestValidator(PersonFirstNameValidation personFirstNameValidation,
-                                           PersonLastNameValidation personLastNameValidation,
-                                           AgreementDateFromValidation agreementDateFromValidation,
-                                           AgreementDateToValidation agreementDateToValidation,
-                                           DateFromLessThenDateToValidation dateFromLessThenDateToValidation,
-                                           AgreementDateFromInFutureValidation agreementDateFromInFutureValidation,
-                                           AgreementDateToInFutureValidation agreementDateToInFutureValidation) {
-        this.personFirstNameValidation = personFirstNameValidation;
-        this.personLastNameValidation = personLastNameValidation;
-        this.agreementDateFromValidation = agreementDateFromValidation;
-        this.agreementDateToValidation = agreementDateToValidation;
-        this.dateFromLessThenDateToValidation = dateFromLessThenDateToValidation;
-        this.agreementDateFromInFutureValidation = agreementDateFromInFutureValidation;
-        this.agreementDateToInFutureValidation = agreementDateToInFutureValidation;
-    }
+    private final List<TravelRequestValidation> travelValidations;
 
     public List<ValidationError> validate(TravelCalculatePremiumRequest request) {
-        List<ValidationError> errors = new ArrayList<>();
-        personFirstNameValidation.validatePersonFirstName(request).ifPresent(errors::add);
-        personLastNameValidation.validatePersonLastName(request).ifPresent(errors::add);
-        agreementDateFromValidation.validateAgreementDateFrom(request).ifPresent(errors::add);
-        agreementDateToValidation.validateAgreementDateTo(request).ifPresent(errors::add);
-        dateFromLessThenDateToValidation.validateDateFromLessThenDateTo(request).ifPresent(errors::add);
-        agreementDateFromInFutureValidation.validateDateFromInFuture(request).ifPresent(errors::add);
-        agreementDateToInFutureValidation.validateDateToInFuture(request).ifPresent(errors::add);
-        return errors;
+        return travelValidations.stream()
+                .map(validation -> validation.execute(request))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
     }
 
 }

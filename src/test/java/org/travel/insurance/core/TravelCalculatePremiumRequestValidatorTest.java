@@ -1,25 +1,18 @@
 package org.travel.insurance.core;
 
-import org.travel.insurance.core.validations.AgreementDateFromInFutureValidation;
-import org.travel.insurance.core.validations.AgreementDateFromValidation;
-import org.travel.insurance.core.validations.AgreementDateToInFutureValidation;
-import org.travel.insurance.core.validations.AgreementDateToValidation;
-import org.travel.insurance.core.validations.DateFromLessThenDateToValidation;
-import org.travel.insurance.core.validations.PersonFirstNameValidation;
-import org.travel.insurance.core.validations.PersonLastNameValidation;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.travel.insurance.core.validations.*;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.ValidationError;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -27,44 +20,37 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class TravelCalculatePremiumRequestValidatorTest {
 
-    @Mock private PersonFirstNameValidation personFirstNameValidation;
-    @Mock private PersonLastNameValidation personLastNameValidation;
-    @Mock private AgreementDateFromValidation agreementDateFromValidation;
-    @Mock private AgreementDateToValidation agreementDateToValidation;
-    @Mock private DateFromLessThenDateToValidation dateFromLessThenDateToValidation;
-    @Mock private AgreementDateFromInFutureValidation agreementDateFromInFutureValidation;
-    @Mock private AgreementDateToInFutureValidation agreementDateToInFutureValidation;
-
     @InjectMocks
     private TravelCalculatePremiumRequestValidator requestValidator;
 
     @Test
-    public void shouldSucceed() {
+    public void shouldNotReturnErrors() {
         TravelCalculatePremiumRequest request = mock(TravelCalculatePremiumRequest.class);
-        when(personFirstNameValidation.validatePersonFirstName(request)).thenReturn(Optional.empty());
-        when(personLastNameValidation.validatePersonLastName(request)).thenReturn(Optional.empty());
-        when(agreementDateFromValidation.validateAgreementDateFrom(request)).thenReturn(Optional.empty());
-        when(agreementDateToValidation.validateAgreementDateTo(request)).thenReturn(Optional.empty());
-        when(dateFromLessThenDateToValidation.validateDateFromLessThenDateTo(request)).thenReturn(Optional.empty());
-        when(agreementDateFromInFutureValidation.validateDateFromInFuture(request)).thenReturn(Optional.empty());
-        when(agreementDateToInFutureValidation.validateDateToInFuture(request)).thenReturn(Optional.empty());
+        TravelRequestValidation validation1 = mock(TravelRequestValidation.class);
+        when(validation1.execute(request)).thenReturn(Optional.empty());
+        TravelRequestValidation validation2 = mock(TravelRequestValidation.class);
+        when(validation2.execute(request)).thenReturn(Optional.empty());
+        List<TravelRequestValidation> travelValidations = List.of(
+                validation1, validation2
+        );
+        ReflectionTestUtils.setField(requestValidator, "travelValidations", travelValidations);
         List<ValidationError> errors = requestValidator.validate(request);
         assertTrue(errors.isEmpty());
     }
 
     @Test
-    public void shouldReturnError() {
+    public void shouldReturnErrors() {
         TravelCalculatePremiumRequest request = mock(TravelCalculatePremiumRequest.class);
-        when(personFirstNameValidation.validatePersonFirstName(request)).thenReturn(Optional.of(new ValidationError()));
-        when(personLastNameValidation.validatePersonLastName(request)).thenReturn(Optional.of(new ValidationError()));
-        when(agreementDateFromValidation.validateAgreementDateFrom(request)).thenReturn(Optional.of(new ValidationError()));
-        when(agreementDateToValidation.validateAgreementDateTo(request)).thenReturn(Optional.of(new ValidationError()));
-        when(dateFromLessThenDateToValidation.validateDateFromLessThenDateTo(request)).thenReturn(Optional.of(new ValidationError()));
-        when(agreementDateFromInFutureValidation.validateDateFromInFuture(request)).thenReturn(Optional.of(new ValidationError()));
-        when(agreementDateToInFutureValidation.validateDateToInFuture(request)).thenReturn(Optional.of(new ValidationError()));
+        TravelRequestValidation validation1 = mock(TravelRequestValidation.class);
+        when(validation1.execute(request)).thenReturn(Optional.of(new ValidationError()));
+        TravelRequestValidation validation2 = mock(TravelRequestValidation.class);
+        when(validation2.execute(request)).thenReturn(Optional.of(new ValidationError()));
+        List<TravelRequestValidation> travelValidations = List.of(
+                validation1, validation2
+        );
+        ReflectionTestUtils.setField(requestValidator, "travelValidations", travelValidations);
         List<ValidationError> errors = requestValidator.validate(request);
-        assertFalse(errors.isEmpty());
-        assertEquals(7, errors.size());
+        assertEquals(2, errors.size());
     }
 
 }
