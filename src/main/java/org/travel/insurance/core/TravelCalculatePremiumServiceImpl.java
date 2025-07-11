@@ -2,6 +2,7 @@ package org.travel.insurance.core;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import org.travel.insurance.core.validations.TravelCalculatePremiumRequestValidator;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.TravelCalculatePremiumResponse;
 import org.springframework.stereotype.Component;

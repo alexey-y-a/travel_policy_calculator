@@ -2,10 +2,10 @@ package org.travel.insurance.core.validations;
 
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.ValidationError;
+import java.util.List;
 
-import java.util.Optional;
+public interface TravelCalculatePremiumRequestValidator {
 
-interface TravelRequestValidation {
+    List<ValidationError> validate(TravelCalculatePremiumRequest request);
 
-    Optional<ValidationError> execute(TravelCalculatePremiumRequest request);
 }

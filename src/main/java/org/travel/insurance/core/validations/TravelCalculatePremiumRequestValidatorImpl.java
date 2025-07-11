@@ -1,21 +1,21 @@
-package org.travel.insurance.core;
+package org.travel.insurance.core.validations;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import org.travel.insurance.core.validations.TravelRequestValidation;
+import org.springframework.stereotype.Component;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.ValidationError;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
 
 @Component
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public class TravelCalculatePremiumRequestValidator {
+@RequiredArgsConstructor
+public class TravelCalculatePremiumRequestValidatorImpl
+        implements TravelCalculatePremiumRequestValidator {
 
     private final List<TravelRequestValidation> travelValidations;
 
+    @Override
     public List<ValidationError> validate(TravelCalculatePremiumRequest request) {
         return travelValidations.stream()
                 .map(validation -> validation.execute(request))
@@ -23,5 +23,4 @@ public class TravelCalculatePremiumRequestValidator {
                 .map(Optional::get)
                 .toList();
     }
-
 }

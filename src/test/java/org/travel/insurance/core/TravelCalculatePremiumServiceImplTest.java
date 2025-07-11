@@ -1,5 +1,6 @@
 package org.travel.insurance.core;
 
+import org.travel.insurance.core.validations.TravelCalculatePremiumRequestValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
