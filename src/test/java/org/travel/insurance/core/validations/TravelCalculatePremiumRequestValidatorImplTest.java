@@ -1,13 +1,12 @@
-package org.travel.insurance.core;
+package org.travel.insurance.core.validations;
 
-import org.springframework.test.util.ReflectionTestUtils;
-import org.travel.insurance.core.validations.*;
-import org.travel.insurance.dto.TravelCalculatePremiumRequest;
-import org.travel.insurance.dto.ValidationError;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.travel.insurance.dto.TravelCalculatePremiumRequest;
+import org.travel.insurance.dto.ValidationError;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,10 +17,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class TravelCalculatePremiumRequestValidatorTest {
+public class TravelCalculatePremiumRequestValidatorImplTest {
 
     @InjectMocks
-    private TravelCalculatePremiumRequestValidator requestValidator;
+    private TravelCalculatePremiumRequestValidatorImpl validator;
 
     @Test
     public void shouldNotReturnErrors() {
@@ -33,8 +32,8 @@ public class TravelCalculatePremiumRequestValidatorTest {
         List<TravelRequestValidation> travelValidations = List.of(
                 validation1, validation2
         );
-        ReflectionTestUtils.setField(requestValidator, "travelValidations", travelValidations);
-        List<ValidationError> errors = requestValidator.validate(request);
+        ReflectionTestUtils.setField(validator, "travelValidations", travelValidations);
+        List<ValidationError> errors = validator.validate(request);
         assertTrue(errors.isEmpty());
     }
 
@@ -48,9 +47,8 @@ public class TravelCalculatePremiumRequestValidatorTest {
         List<TravelRequestValidation> travelValidations = List.of(
                 validation1, validation2
         );
-        ReflectionTestUtils.setField(requestValidator, "travelValidations", travelValidations);
-        List<ValidationError> errors = requestValidator.validate(request);
+        ReflectionTestUtils.setField(validator, "travelValidations", travelValidations);
+        List<ValidationError> errors = validator.validate(request);
         assertEquals(2, errors.size());
     }
-
 }
