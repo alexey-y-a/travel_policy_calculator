@@ -1,6 +1,8 @@
 package org.travel.insurance.rest;
 
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import org.travel.insurance.core.TravelCalculatePremiumService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,18 +13,17 @@ import org.travel.insurance.dto.TravelCalculatePremiumResponse;
 
 @RestController
 @RequestMapping("/insurance/travel")
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class TravelCalculatePremiumController {
 
+	private final TravelCalculatePremiumRequestLogger requestLogger;
 	private final TravelCalculatePremiumService calculatePremiumService;
-
-	public TravelCalculatePremiumController(TravelCalculatePremiumService calculatePremiumService) {
-		this.calculatePremiumService = calculatePremiumService;
-	}
 
 	@PostMapping(path = "/",
 			consumes = "application/json",
 			produces = "application/json")
 	public TravelCalculatePremiumResponse calculatePremium(@RequestBody TravelCalculatePremiumRequest request) {
+		requestLogger.log(request);
 		return calculatePremiumService.calculatePremium(request);
 	}
 
