@@ -17,6 +17,7 @@ import org.travel.insurance.dto.TravelCalculatePremiumResponse;
 public class TravelCalculatePremiumController {
 
 	private final TravelCalculatePremiumRequestLogger requestLogger;
+	private final TravelCalculatePremiumResponseLogger responseLogger;
 	private final TravelCalculatePremiumService calculatePremiumService;
 
 	@PostMapping(path = "/",
@@ -24,7 +25,9 @@ public class TravelCalculatePremiumController {
 			produces = "application/json")
 	public TravelCalculatePremiumResponse calculatePremium(@RequestBody TravelCalculatePremiumRequest request) {
 		requestLogger.log(request);
-		return calculatePremiumService.calculatePremium(request);
+		TravelCalculatePremiumResponse response = calculatePremiumService.calculatePremium(request);
+		responseLogger.log(response);
+		return response;
 	}
 
 }
