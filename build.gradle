@@ -19,13 +19,18 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test' // Для Spring тестов
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'      // JUnit 5
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'      // Движок JUnit
-
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+    implementation('com.fasterxml.jackson.core:jackson-core:2.14.2')
+    implementation('com.fasterxml.jackson.core:jackson-databind:2.14.2')
+    implementation('com.fasterxml.jackson.core:jackson-annotations:2.14.2')
+    implementation('com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2')
+    implementation('com.google.guava:guava:31.0.1-jre')
+    testImplementation('com.google.guava:guava:31.0.1-jre')
+    testImplementation('org.hamcrest:hamcrest:2.2')
     compileOnly('org.projectlombok:lombok:1.18.32')
     annotationProcessor('org.projectlombok:lombok:1.18.32')
-
     testCompileOnly('org.projectlombok:lombok:1.18.32')
     testAnnotationProcessor('org.projectlombok:lombok:1.18.32')
 }
