@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.travel.insurance.core.DateTimeService;
+import org.travel.insurance.core.ErrorCodeUtil;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.ValidationError;
 
@@ -16,14 +17,13 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AgreementDateToInFutureValidationTest {
 
-    @Mock
-    private DateTimeService dateTimeService;
+    @Mock private DateTimeService dateTimeService;
+    @Mock private ErrorCodeUtil errorCodeUtil;
 
     @InjectMocks
     private AgreementDateToInFutureValidation validation;
@@ -33,10 +33,11 @@ class AgreementDateToInFutureValidationTest {
         TravelCalculatePremiumRequest request = mock(TravelCalculatePremiumRequest.class);
         when(request.getAgreementDateTo()).thenReturn(createDate("01.01.2020"));
         when(dateTimeService.getCurrentDateTime()).thenReturn(createDate("01.01.2023"));
+        when(errorCodeUtil.getErrorDescription("ERROR_CODE_3")).thenReturn("error description");
         Optional<ValidationError> errorOpt = validation.execute(request);
         assertTrue(errorOpt.isPresent());
-        assertEquals("agreementDateTo", errorOpt.get().getField());
-        assertEquals("Must be in the future!", errorOpt.get().getMessage());
+        assertEquals("ERROR_CODE_3", errorOpt.get().getErrorCode());
+        assertEquals("error description", errorOpt.get().getDescription());
     }
 
     @Test
@@ -46,6 +47,7 @@ class AgreementDateToInFutureValidationTest {
         when(dateTimeService.getCurrentDateTime()).thenReturn(createDate("01.01.2023"));
         Optional<ValidationError> errorOpt = validation.execute(request);
         assertTrue(errorOpt.isEmpty());
+        verifyNoInteractions(errorCodeUtil);
     }
 
     private Date createDate(String dateStr) {
