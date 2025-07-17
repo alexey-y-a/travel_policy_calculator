@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.travel.insurance.core.DateTimeService;
+import org.travel.insurance.core.ErrorCodeUtil;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.ValidationError;
 
@@ -15,14 +16,20 @@ import java.util.Optional;
 public class AgreementDateToInFutureValidation implements TravelRequestValidation {
 
     private final DateTimeService dateTimeService;
+    private final ErrorCodeUtil errorCodeUtil;
 
     @Override
     public Optional<ValidationError> execute(TravelCalculatePremiumRequest request) {
         Date dateTo = request.getAgreementDateTo();
         Date currentDateTime = dateTimeService.getCurrentDateTime();
         return (dateTo != null && dateTo.before(currentDateTime))
-                ? Optional.of(new ValidationError("agreementDateTo", "Must be in the future!"))
+                ? Optional.of(buildError("ERROR_CODE_3"))
                 : Optional.empty();
+    }
+
+    private ValidationError buildError(String errorCode) {
+        String errorDescription = errorCodeUtil.getErrorDescription(errorCode);
+        return new ValidationError(errorCode, errorDescription);
     }
 
 }
