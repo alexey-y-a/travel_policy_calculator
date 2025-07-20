@@ -3,7 +3,6 @@ package org.travel.insurance.core.validations;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.travel.insurance.core.ErrorCodeUtil;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.ValidationError;
 
