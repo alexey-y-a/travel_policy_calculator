@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.travel.insurance.core.DateTimeService;
+import org.travel.insurance.core.util.DateTimeUtil;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.ValidationError;
 
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AgreementDateFromInFutureValidationTest {
 
-    @Mock private DateTimeService dateTimeService;
+    @Mock private DateTimeUtil dateTimeUtil;
     @Mock private ValidationErrorFactory errorFactory;
 
     @InjectMocks
@@ -30,7 +30,7 @@ class AgreementDateFromInFutureValidationTest {
     public void shouldReturnErrorWhenAgreementDateFromInThePast() {
         TravelCalculatePremiumRequest request = mock(TravelCalculatePremiumRequest.class);
         when(request.getAgreementDateFrom()).thenReturn(createDate("01.01.2020"));
-        when(dateTimeService.getCurrentDateTime()).thenReturn(createDate("01.01.2023"));
+        when(dateTimeUtil.getCurrentDateTime()).thenReturn(createDate("01.01.2023"));
         ValidationError validationError = mock(ValidationError.class);
         when(errorFactory.buildError("ERROR_CODE_1")).thenReturn(validationError);
         Optional<ValidationError> errorOpt = validation.execute(request);
@@ -42,7 +42,7 @@ class AgreementDateFromInFutureValidationTest {
     public void shouldNotReturnErrorWhenAgreementDateFromInFuture() {
         TravelCalculatePremiumRequest request = mock(TravelCalculatePremiumRequest.class);
         when(request.getAgreementDateFrom()).thenReturn(createDate("01.01.2025"));
-        when(dateTimeService.getCurrentDateTime()).thenReturn(createDate("01.01.2023"));
+        when(dateTimeUtil.getCurrentDateTime()).thenReturn(createDate("01.01.2023"));
         Optional<ValidationError> errorOpt = validation.execute(request);
         assertTrue(errorOpt.isEmpty());
         verifyNoInteractions(errorFactory);

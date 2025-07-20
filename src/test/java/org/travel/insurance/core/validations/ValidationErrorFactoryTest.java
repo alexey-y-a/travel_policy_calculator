@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.travel.insurance.core.ErrorCodeUtil;
+import org.travel.insurance.core.util.ErrorCodeUtil;
 import org.travel.insurance.dto.ValidationError;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

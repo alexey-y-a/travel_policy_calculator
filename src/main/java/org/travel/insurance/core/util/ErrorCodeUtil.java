@@ -1,4 +1,4 @@
-package org.travel.insurance.core;
+package org.travel.insurance.core.util;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
