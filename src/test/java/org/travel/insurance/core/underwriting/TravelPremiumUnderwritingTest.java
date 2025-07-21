@@ -1,12 +1,12 @@
-package org.travel.insurance.core;
+package org.travel.insurance.core.underwriting;
 
+import org.travel.insurance.core.util.DateTimeUtil;
+import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.travel.insurance.core.util.DateTimeUtil;
-import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,7 +21,7 @@ public class TravelPremiumUnderwritingTest {
     @Mock private DateTimeUtil dateTimeUtil;
 
     @InjectMocks
-    private TravelPremiumUnderwriting premiumUnderwriting;
+    private TravelPremiumUnderwritingImpl premiumUnderwriting;
 
     @Test
     void shouldReturnResponseWithCorrectAgreementPrice() {
