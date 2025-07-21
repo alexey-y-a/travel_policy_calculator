@@ -4,7 +4,7 @@ package org.travel.insurance.rest;
 import com.google.common.base.Stopwatch;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import org.travel.insurance.core.TravelCalculatePremiumService;
+import org.travel.insurance.core.services.TravelCalculatePremiumService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

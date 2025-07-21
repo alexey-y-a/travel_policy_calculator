@@ -1,7 +1,8 @@
-package org.travel.insurance.core;
+package org.travel.insurance.core.services;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import org.travel.insurance.core.underwriting.TravelPremiumUnderwriting;
 import org.travel.insurance.core.validations.TravelCalculatePremiumRequestValidator;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.TravelCalculatePremiumResponse;

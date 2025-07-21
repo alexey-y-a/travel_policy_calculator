@@ -1,5 +1,6 @@
-package org.travel.insurance.core;
+package org.travel.insurance.core.services;
 
+import org.travel.insurance.core.underwriting.TravelPremiumUnderwriting;
 import org.travel.insurance.core.validations.TravelCalculatePremiumRequestValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
