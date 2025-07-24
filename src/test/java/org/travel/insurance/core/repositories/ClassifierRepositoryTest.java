@@ -17,17 +17,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DataJpaTest
 class ClassifierRepositoryTest {
 
-    @Autowired
-    private ClassifierRepository classifierRepository;
+    @Autowired private ClassifierRepository classifierRepository;
 
     @Test
-    @DisplayName("Test: Classifier table is present")
     public void injectedRepositoryAreNotNull() {
         assertNotNull(classifierRepository);
     }
 
     @Test
-    @DisplayName("Test: Can find record by Title")
     public void shouldFindRiskTypeClassifier() {
         Optional<Classifier> riskTypeOpt = classifierRepository.findByTitle("RISK_TYPE");
         assertTrue(riskTypeOpt.isPresent());
@@ -35,9 +32,8 @@ class ClassifierRepositoryTest {
     }
 
     @Test
-    @DisplayName("Test: Can't find record with Fake title")
     public void shouldNotFindFakeClassifier() {
-        Optional<Classifier> riskTypeOpt = classifierRepository.findByTitle("RISKS_TYPE");
+        Optional<Classifier> riskTypeOpt = classifierRepository.findByTitle("FAKE");
         assertTrue(riskTypeOpt.isEmpty());
     }
 
