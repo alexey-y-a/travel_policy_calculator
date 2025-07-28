@@ -4,7 +4,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.travel.insurance.core.util.ErrorCodeUtil;
+import org.travel.insurance.core.util.Placeholder;
 import org.travel.insurance.dto.ValidationError;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
@@ -16,4 +19,10 @@ class ValidationErrorFactory {
         String errorDescription = errorCodeUtil.getErrorDescription(errorCode);
         return new ValidationError(errorCode, errorDescription);
     }
+
+    ValidationError buildError(String errorCode, List<Placeholder> placeholders) {
+        String errorDescription = errorCodeUtil.getErrorDescription(errorCode, placeholders);
+        return new ValidationError(errorCode, errorDescription);
+    }
+
 }
