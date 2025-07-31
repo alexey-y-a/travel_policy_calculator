@@ -1,0 +1,21 @@
+package org.travel.insurance.core.underwriting;
+
+import org.springframework.stereotype.Component;
+import org.travel.insurance.dto.TravelCalculatePremiumRequest;
+
+import java.math.BigDecimal;
+
+@Component
+class TravelThirdPartyLiabilityRiskPremiumCalculator implements TravelRiskPremiumCalculator {
+
+    @Override
+    public BigDecimal calculatePremium(TravelCalculatePremiumRequest request) {
+        return BigDecimal.ZERO;
+    }
+
+    @Override
+    public String getRiskIc() {
+        return "TRAVEL_THIRD_PARTY_LIABILITY";
+    }
+
+}
