@@ -36,7 +36,7 @@ public class TravelCalculatePremiumServiceImpl implements TravelCalculatePremium
         travelCalculatePremiumResponse.setPersonLastName(travelCalculatePremiumRequest.getPersonLastName());
         travelCalculatePremiumResponse.setAgreementDateFrom(travelCalculatePremiumRequest.getAgreementDateFrom());
         travelCalculatePremiumResponse.setAgreementDateTo(travelCalculatePremiumRequest.getAgreementDateTo());
-        travelCalculatePremiumResponse.setAgreementPrice(premium);
+        travelCalculatePremiumResponse.setAgreementPremium(premium);
 
         return travelCalculatePremiumResponse;
     }
