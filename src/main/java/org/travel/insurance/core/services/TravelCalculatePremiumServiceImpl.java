@@ -2,19 +2,18 @@ package org.travel.insurance.core.services;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import org.travel.insurance.core.underwriting.TravelPremiumCalculationResult;
 import org.travel.insurance.core.underwriting.TravelPremiumUnderwriting;
 import org.travel.insurance.core.validations.TravelCalculatePremiumRequestValidator;
-import org.travel.insurance.dto.RiskPremium;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 import org.travel.insurance.dto.TravelCalculatePremiumResponse;
 import org.springframework.stereotype.Component;
 import org.travel.insurance.dto.ValidationError;
-import java.math.BigDecimal;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public class TravelCalculatePremiumServiceImpl implements TravelCalculatePremiumService {
+class TravelCalculatePremiumServiceImpl implements TravelCalculatePremiumService {
 
     private final TravelCalculatePremiumRequestValidator requestValidator;
     private final TravelPremiumUnderwriting premiumUnderwriting;
@@ -31,21 +30,16 @@ public class TravelCalculatePremiumServiceImpl implements TravelCalculatePremium
         return new TravelCalculatePremiumResponse(errors);
     }
 
-    private TravelCalculatePremiumResponse buildResponse(TravelCalculatePremiumRequest travelCalculatePremiumRequest, BigDecimal premium) {
+    private TravelCalculatePremiumResponse buildResponse(TravelCalculatePremiumRequest travelCalculatePremiumRequest,
+                                                         TravelPremiumCalculationResult premiumCalculationResult) {
         TravelCalculatePremiumResponse travelCalculatePremiumResponse = new TravelCalculatePremiumResponse();
         travelCalculatePremiumResponse.setPersonFirstName(travelCalculatePremiumRequest.getPersonFirstName());
         travelCalculatePremiumResponse.setPersonLastName(travelCalculatePremiumRequest.getPersonLastName());
         travelCalculatePremiumResponse.setAgreementDateFrom(travelCalculatePremiumRequest.getAgreementDateFrom());
         travelCalculatePremiumResponse.setAgreementDateTo(travelCalculatePremiumRequest.getAgreementDateTo());
-        travelCalculatePremiumResponse.setAgreementPremium(premium);
-        travelCalculatePremiumResponse.setRisks(buildRisks(travelCalculatePremiumRequest));
+        travelCalculatePremiumResponse.setAgreementPremium(premiumCalculationResult.getTotalPremium());
+        travelCalculatePremiumResponse.setRisks(premiumCalculationResult.getRiskPremiums());
         return travelCalculatePremiumResponse;
-    }
-
-    private List<RiskPremium> buildRisks(TravelCalculatePremiumRequest request) {
-        return request.getSelectedRisks().stream()
-                .map(riskIc -> new RiskPremium(riskIc, BigDecimal.ZERO))
-                .toList();
     }
 
 }
