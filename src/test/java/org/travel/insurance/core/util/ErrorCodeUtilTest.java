@@ -15,8 +15,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ErrorCodeUtilTest {
 
-    @Mock
-    private Properties props;
+    @Mock private Properties props;
 
     @InjectMocks
     private ErrorCodeUtil errorCodeUtil;
@@ -31,8 +30,7 @@ class ErrorCodeUtilTest {
     public void shouldGetErrorDescriptionWithPlaceholder() {
         Placeholder placeholder = new Placeholder("PLACEHOLDER", "AAA");
         when(props.getProperty("ERROR_CODE")).thenReturn("error {PLACEHOLDER} description");
-        assertEquals("error AAA description",
-                errorCodeUtil.getErrorDescription("ERROR_CODE", List.of(placeholder)));
+        assertEquals("error AAA description", errorCodeUtil.getErrorDescription("ERROR_CODE", List.of(placeholder)));
     }
 
 }
