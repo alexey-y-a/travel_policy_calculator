@@ -16,11 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 public class TravelCalculatePremiumRequestValidatorImplTest {
-
-    @InjectMocks
-    private TravelCalculatePremiumRequestValidatorImpl validator;
 
     @Test
     public void shouldNotReturnErrors() {
@@ -31,10 +27,7 @@ public class TravelCalculatePremiumRequestValidatorImplTest {
         TravelRequestValidation validation2 = mock(TravelRequestValidation.class);
         when(validation2.validate(request)).thenReturn(Optional.empty());
         when(validation2.validateList(request)).thenReturn(List.of());
-        List<TravelRequestValidation> travelValidations = List.of(
-                validation1, validation2
-        );
-        ReflectionTestUtils.setField(validator, "travelValidations", travelValidations);
+        var validator = new TravelCalculatePremiumRequestValidatorImpl(List.of(validation1, validation2));
         List<ValidationError> errors = validator.validate(request);
         assertTrue(errors.isEmpty());
     }
@@ -46,10 +39,7 @@ public class TravelCalculatePremiumRequestValidatorImplTest {
         when(validation1.validate(request)).thenReturn(Optional.of(new ValidationError()));
         TravelRequestValidation validation2 = mock(TravelRequestValidation.class);
         when(validation2.validate(request)).thenReturn(Optional.of(new ValidationError()));
-        List<TravelRequestValidation> travelValidations = List.of(
-                validation1, validation2
-        );
-        ReflectionTestUtils.setField(validator, "travelValidations", travelValidations);
+        var validator = new TravelCalculatePremiumRequestValidatorImpl(List.of(validation1, validation2));
         List<ValidationError> errors = validator.validate(request);
         assertEquals(2, errors.size());
     }
@@ -63,10 +53,7 @@ public class TravelCalculatePremiumRequestValidatorImplTest {
         TravelRequestValidation validation2 = mock(TravelRequestValidation.class);
         when(validation2.validate(request)).thenReturn(Optional.empty());
         when(validation2.validateList(request)).thenReturn(List.of(new ValidationError()));
-        List<TravelRequestValidation> travelValidations = List.of(
-                validation1, validation2
-        );
-        ReflectionTestUtils.setField(validator, "travelValidations", travelValidations);
+        var validator = new TravelCalculatePremiumRequestValidatorImpl(List.of(validation1, validation2));
         List<ValidationError> errors = validator.validate(request);
         assertEquals(2, errors.size());
     }
