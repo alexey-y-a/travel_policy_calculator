@@ -1,8 +1,9 @@
-package org.travel.insurance.core.underwriting;
+package org.travel.insurance.core.underwriting.calculators;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.travel.insurance.core.underwriting.TravelRiskPremiumCalculator;
 import org.travel.insurance.core.util.DateTimeUtil;
 import org.travel.insurance.dto.TravelCalculatePremiumRequest;
 
