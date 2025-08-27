@@ -24,5 +24,4 @@ class ValidationErrorFactory {
         String errorDescription = errorCodeUtil.getErrorDescription(errorCode, placeholders);
         return new ValidationError(errorCode, errorDescription);
     }
-
 }
